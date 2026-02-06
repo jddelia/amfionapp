@@ -1,0 +1,32 @@
+{
+  "name": "@amfion/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts --dts --format esm",
+    "start": "node dist/index.js",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --check ."
+  },
+  "dependencies": {
+    "@amfion/shared": "workspace:*",
+    "bullmq": "^5.8.2",
+    "ioredis": "^5.4.1",
+    "pino": "^9.4.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsup": "^8.2.4",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.1",
+    "eslint": "^9.10.0",
+    "prettier": "^3.3.3"
+  }
+}
