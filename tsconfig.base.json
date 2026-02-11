@@ -14,6 +14,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "useDefineForClassFields": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@amfion/shared": ["packages/shared/src/index.ts"],
+      "@amfion/integrations": ["packages/integrations/src/index.ts"]
+    }
   }
 }

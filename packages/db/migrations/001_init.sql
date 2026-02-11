@@ -12,29 +12,6 @@ begin
 end;
 $$;
 
-create or replace function public.is_platform_admin(uid uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (select 1 from platform_admins where user_id = uid);
-$$;
-
-create or replace function public.is_tenant_member(tid uuid, uid uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from tenant_memberships
-    where tenant_id = tid and user_id = uid and status = 'active'
-  );
-$$;
-
 -- Tenants
 create table if not exists tenants (
   id uuid primary key default gen_random_uuid(),
@@ -114,6 +91,30 @@ create table if not exists platform_admins (
   user_id uuid primary key,
   created_at timestamptz not null default now()
 );
+
+-- RLS helper functions (depend on membership tables)
+create or replace function public.is_platform_admin(uid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from platform_admins where user_id = uid);
+$$;
+
+create or replace function public.is_tenant_member(tid uuid, uid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from tenant_memberships
+    where tenant_id = tid and user_id = uid and status = 'active'
+  );
+$$;
 
 -- Services
 create table if not exists tenant_services (

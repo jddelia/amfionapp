@@ -2,6 +2,117 @@
 
 This guide lists everything you need to set up on your end before we wire the full production integrations. It is intentionally granular and step-by-step.
 
+## 0) Local Dev Prerequisites (Do This First)
+
+These steps prevent common errors like `tsx: command not found` and missing modules.
+
+### 0.1 Install Node.js 20.9+ (recommended via `nvm`)
+
+1. Install `nvm` (Node Version Manager) if you don’t already have it:
+   - macOS/Linux:
+     ```bash
+     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+     ```
+2. Restart your terminal or run:
+   ```bash
+   source ~/.zshrc
+   ```
+3. Install and use Node 20:
+   ```bash
+   nvm install 20
+   nvm use 20
+   node -v
+   ```
+   Confirm the version is `v20.9.0` or newer.
+
+### 0.2 Enable `corepack` (so pnpm works)
+
+1. Run:
+   ```bash
+   corepack enable
+   ```
+2. Optional: pin pnpm version for this repo:
+   ```bash
+   corepack prepare pnpm@9.12.3 --activate
+   ```
+3. Verify:
+   ```bash
+   pnpm -v
+   ```
+
+### 0.3 Install repo dependencies (this fixes `tsx: command not found`)
+
+From the repo root:
+
+```bash
+pnpm install
+```
+
+This installs `tsx` and all workspace dependencies.
+
+### 0.4 Start the API locally
+
+Create the API env file first:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+
+Then start:
+
+```bash
+pnpm dev:api
+```
+
+If it still fails, check:
+
+- You ran `pnpm install` at the repo root (not inside `apps/api`).
+- You’re on Node 20.9+.
+
+### 0.5 Troubleshooting common dev errors
+
+**Error:** `ERR_MODULE_NOT_FOUND ... @amfion/shared/dist/index.js`
+Cause: workspace package build artifacts are missing.
+Fix:
+
+```bash
+pnpm install
+pnpm --filter @amfion/shared build
+pnpm --filter @amfion/integrations build
+```
+
+Then re-run:
+
+```bash
+pnpm dev:api
+```
+
+The root `dev:api` script now prebuilds workspace packages automatically, so you should not need to run these manually after this update.
+
+**Error:** you see `Node.js v23.x` in the stack trace
+Cause: Node 23 is not supported by the repo config.
+Fix:
+
+```bash
+nvm use 20
+node -v
+```
+
+**Error:** `ZodError ... TENANT_HOST_SUFFIX / TENANT_DEFAULT_SLUG / TENANT_DEFAULT_ID`
+Cause: required env values were missing and `.env` was not loaded.
+Fix:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+pnpm dev:api
+```
+
+Optional verification:
+
+```bash
+cat apps/api/.env | rg \"TENANT_HOST_SUFFIX|TENANT_DEFAULT_SLUG|TENANT_DEFAULT_ID\"
+```
+
 ## 0) Quick Checklist (What You’ll Collect)
 
 | Provider | Values to Collect | Where You’ll Use It |
@@ -54,7 +165,7 @@ Option B: SQL (recommended for automation)
 1. In SQL Editor, run:
 
 ```sql
-select vault.create_secret('my_secret_value');
+select vault.create_secret('amfionapp_secret');
 ```
 
 2. Capture the returned UUID.
@@ -104,6 +215,51 @@ Cal.com signs payloads with `x-cal-signature-256`. You’ll verify this signatur
 - API key (store in Supabase Vault for each tenant)
 - Event Type IDs
 - Webhook signing secret
+
+### 2.5 Local testing (tunnel required)
+
+To test Cal.com webhooks against your local API, you must expose your local server over HTTPS.
+
+Option A: `ngrok` (simple)
+1. Install ngrok:
+   ```bash
+   brew install ngrok/ngrok/ngrok
+   ```
+2. Start your API:
+   ```bash
+   pnpm dev:api
+   ```
+3. In a new terminal, run:
+   ```bash
+   ngrok http 4000
+   ```
+4. Copy the HTTPS URL from ngrok (example: `https://abcd-1234.ngrok-free.app`).
+5. In Cal.com, set `Subscriber URL` to:
+   ```
+   https://abcd-1234.ngrok-free.app/v1/webhooks/calcom
+   ```
+
+Option B: `cloudflared` (Cloudflare tunnel)
+1. Install cloudflared:
+   ```bash
+   brew install cloudflare/cloudflare/cloudflared
+   ```
+2. Start your API:
+   ```bash
+   pnpm dev:api
+   ```
+3. In a new terminal, run:
+   ```bash
+   cloudflared tunnel --url http://localhost:4000
+   ```
+4. Copy the HTTPS URL cloudflared prints (example: `https://abcd.trycloudflare.com`).
+5. In Cal.com, set `Subscriber URL` to:
+   ```
+   https://abcd.trycloudflare.com/v1/webhooks/calcom
+   ```
+
+Once wired, create a test booking in Cal.com and watch your local API logs for the webhook request.
+Current implementation note: the webhook routes accept and log events with HTTP `202` while full signature verification and queue processing are being wired.
 
 ## 3) Anthropic (Claude)
 

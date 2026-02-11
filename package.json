@@ -9,8 +9,8 @@
   ],
   "scripts": {
     "dev:web": "pnpm --filter @amfion/web dev",
-    "dev:api": "pnpm --filter @amfion/api dev",
-    "dev:worker": "pnpm --filter @amfion/worker dev",
+    "dev:api": "pnpm --filter @amfion/shared build && pnpm --filter @amfion/integrations build && pnpm --filter @amfion/api dev",
+    "dev:worker": "pnpm --filter @amfion/shared build && pnpm --filter @amfion/worker dev",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",

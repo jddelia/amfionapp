@@ -14,6 +14,7 @@ import { registerHealthRoutes } from "./routes/health";
 import { registerPublicRoutes } from "./routes/public";
 import { registerChatRoutes } from "./routes/chat";
 import { registerAdminRoutes } from "./routes/admin";
+import { registerWebhookRoutes } from "./routes/webhooks";
 import { MemoryTenantStore } from "./store/tenantStore";
 import { buildSeedTenants } from "./store/seed";
 import { MemoryChatSessionStore } from "./store/chatStore";
@@ -22,7 +23,7 @@ export const buildServer = () => {
   const logger = buildLogger(config.LOG_LEVEL);
 
   const app = Fastify({
-    logger,
+    loggerInstance: logger,
     trustProxy: true,
     genReqId: () => crypto.randomUUID()
   });
@@ -68,6 +69,7 @@ export const buildServer = () => {
   registerPublicRoutes(app);
   registerChatRoutes(app, chatStore);
   registerAdminRoutes(app);
+  registerWebhookRoutes(app);
 
   return app;
 };
