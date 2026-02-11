@@ -84,8 +84,9 @@ export const ChatWidget = () => {
         if (eventName === "message") {
           try {
             const payload = JSON.parse(dataLine) as { text?: string };
-            if (payload.text) {
-              setMessages((prev) => [...prev, { role: "assistant", text: payload.text }]);
+            const text = payload.text;
+            if (typeof text === "string" && text.length > 0) {
+              setMessages((prev) => [...prev, { role: "assistant", text }]);
             }
           } catch {
             setMessages((prev) => [...prev, { role: "assistant", text: dataLine }]);

@@ -9,6 +9,8 @@
 ## Webhooks
 
 - Verify Cal.com `x-cal-signature-256` HMAC SHA256 signature.
+- Reject Cal.com webhook requests when signature is missing/invalid (HTTP 401).
+- Fail closed when `CAL_WEBHOOK_SECRET` is missing (HTTP 500).
 - Verify Stripe webhook signatures using `stripe.webhooks.constructEvent`.
 
 ## PII Handling

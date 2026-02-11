@@ -3,7 +3,7 @@ import { getTenantPublicData } from "../../lib/api";
 import { ChatWidget } from "../../components/ChatWidget";
 
 export default async function ChatPage() {
-  const host = headers().get("host");
+  const host = (await headers()).get("host");
   const tenant = await getTenantPublicData(host);
 
   return (

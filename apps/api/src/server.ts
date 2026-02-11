@@ -28,6 +28,23 @@ export const buildServer = () => {
     genReqId: () => crypto.randomUUID()
   });
 
+  // Normalize accidental double slashes in inbound paths (e.g. //v1/webhooks/stripe).
+  app.addHook("onRequest", (request, _reply, done) => {
+    const rawUrl = request.raw.url;
+    if (!rawUrl) return done();
+
+    const queryStart = rawUrl.indexOf("?");
+    const path = queryStart === -1 ? rawUrl : rawUrl.slice(0, queryStart);
+    const query = queryStart === -1 ? "" : rawUrl.slice(queryStart);
+    const normalizedPath = path.replace(/\/{2,}/g, "/");
+
+    if (normalizedPath !== path) {
+      request.raw.url = `${normalizedPath}${query}`;
+    }
+
+    done();
+  });
+
   const corsOrigins = config.CORS_ORIGINS?.split(",").map((origin) => origin.trim());
 
   app.register(cors, {

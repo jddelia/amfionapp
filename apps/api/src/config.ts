@@ -50,6 +50,7 @@ const envSchema = z.object({
   SUPABASE_URL: optionalString,
   SUPABASE_SERVICE_ROLE_KEY: optionalString,
   SUPABASE_ANON_KEY: optionalString,
+  CAL_WEBHOOK_SECRET: optionalString,
   CORS_ORIGINS: optionalString
 });
 

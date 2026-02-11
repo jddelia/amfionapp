@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { getTenantPublicData } from "../lib/api";
 
 export default async function HomePage() {
-  const host = headers().get("host");
+  const host = (await headers()).get("host");
   const tenant = await getTenantPublicData(host);
 
   return (
